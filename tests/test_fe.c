@@ -24,25 +24,39 @@ CTEST(suite_fe, test_tok) {
     ASSERT_TRUE(IS_TOKEN(l->first, DefunToken));
     ASSERT_STR(TOK_TEXT(l->first), "def");
     /* var */
-    ASSERT_TRUE(IS_TOKEN(l->rest->first, VarToken));
-    ASSERT_STR(TOK_TEXT(l->rest->first), "f");
+    l = l->rest;
+    ASSERT_TRUE(IS_TOKEN(l->first, VarToken));
+    ASSERT_STR(TOK_TEXT(l->first), "f");
     /* ( */
-    ASSERT_TRUE(IS_TOKEN(l->rest->rest->first, LBracketToken));
-    ASSERT_STR(TOK_TEXT(l->rest->rest->first), "(");
+    l = l->rest;
+    ASSERT_TRUE(IS_TOKEN(l->first, LBracketToken));
+    ASSERT_STR(TOK_TEXT(l->first), "(");
     /* Num */
-    ASSERT_TRUE(IS_TOKEN(l->rest->rest->rest->first, NumToken));
-    ASSERT_STR(TOK_TEXT(l->rest->rest->rest->first), "1.2");
-    ASSERT_DBL_NEAR(((NumToken)(l->rest->rest->rest->first))->num, 1.2);
+    l = l->rest;
+    ASSERT_TRUE(IS_TOKEN(l->first, NumToken));
+    ASSERT_STR(TOK_TEXT(l->first), "1.2");
+    ASSERT_DBL_NEAR(((NumToken)(l->first))->num, 1.2);
     /* , */
-    ASSERT_TRUE(IS_TOKEN(l->rest->rest->rest->rest->first, CommaToken));
-    ASSERT_STR(TOK_TEXT(l->rest->rest->rest->rest->first), ",");
+    l = l->rest;
+    ASSERT_TRUE(IS_TOKEN(l->first, CommaToken));
+    ASSERT_STR(TOK_TEXT(l->first), ",");
     /* Op */
-    ASSERT_TRUE(IS_TOKEN(l->rest->rest->rest->rest->rest->first, OpToken));
-    ASSERT_STR(TOK_TEXT(l->rest->rest->rest->rest->rest->first), "-");
-    ASSERT_EQUAL(((OpToken)(l->rest->rest->rest->rest->rest->first))->op, '-');
+    l = l->rest;
+    ASSERT_TRUE(IS_TOKEN(l->first, OpToken));
+    ASSERT_STR(TOK_TEXT(l->first), "-");
+    ASSERT_EQUAL(((OpToken)(l->first))->op, '-');
     /* ) */
-    ASSERT_TRUE(IS_TOKEN(l->rest->rest->rest->rest->rest->rest->first, RBracketToken));
-    ASSERT_STR(TOK_TEXT(l->rest->rest->rest->rest->rest->rest->first), ")");
+    l = l->rest;
+    ASSERT_TRUE(IS_TOKEN(l->first, RBracketToken));
+    ASSERT_STR(TOK_TEXT(l->first), ")");
+    /* { */
+    l = l->rest;
+    ASSERT_TRUE(IS_TOKEN(l->first, LBraceToken));
+    ASSERT_STR(TOK_TEXT(l->first), "{");
+    /* } */
+    l = l->rest;
+    ASSERT_TRUE(IS_TOKEN(l->first, RBraceToken));
+    ASSERT_STR(TOK_TEXT(l->first), "}");
 }
 
 CTEST(suite_fe, test_parse1) {

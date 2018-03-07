@@ -19,7 +19,8 @@ static void handle_bin(void *first, List_T Tokens, ParseResult pr);
 static void handle_call(void *first, List_T Tokens, ParseResult pr);
 static void handle_defun(void *first, List_T Tokens, ParseResult pr);
 static void handle_prototype(void *first, List_T Tokens, ParseResult pr);
-static ParseResult parse_multi(ParseFunc_T parse_func , List_T Tokens, const char *delim);
+static ParseResult parse_multi(ParseFunc_T parse_func ,
+                               List_T Tokens, const char *delim);
 static ParseResult parse_exp(List_T Tokens);
 
 Except_T Parse_Failed = { "Parse Failed" };
@@ -57,7 +58,7 @@ parse_exp(List_T Tokens)
     case OpToken_T:
         handle_bin(Tokens->first, Tokens->rest, pr);
         break;
-    case LBracketToken_T:
+    case LBraceToken_T:
         handle_call(Tokens->first, Tokens->rest, pr);
         break;
     case DefunToken_T:
@@ -147,14 +148,14 @@ handle_call(void *first, List_T Tokens, ParseResult pr)
     CallExprAst call_expr;
     LBracketToken l_bracket_token = first;
 
-    assert(IS_TOKEN(first, LBracketToken));
+    assert(IS_TOKEN(first, LBraceToken));
 
     NEW(call_expr);
     call_expr->tag = CallExprAst_T;
     ParseResult pr1 = parse_exp(Tokens);
     List_T R0 = wait_token(pr1->Rem_tokens, ",");
     ParseResult pr2 = parse_multi(parse_exp, R0, ",");
-    List_T R1 = wait_token(pr2->Rem_tokens, ")");
+    List_T R1 = wait_token(pr2->Rem_tokens, "}");
     call_expr->callee = pr1->expr_ast;
     call_expr->args = pr2->list_result;
 

@@ -12,6 +12,8 @@ enum Token_Tag
     OpToken_T,
     LBracketToken_T,
     RBracketToken_T,
+    LBraceToken_T,
+    RBraceToken_T,
     CommaToken_T,
     DefunToken_T
 };
@@ -54,6 +56,18 @@ struct RBracketToken
     char raw_text[MAX_TOKEN_LEN];
 };
 
+struct LBraceToken
+{
+    enum Token_Tag tag;
+    char raw_text[MAX_TOKEN_LEN];
+};
+
+struct RBraceToken
+{
+    enum Token_Tag tag;
+    char raw_text[MAX_TOKEN_LEN];
+};
+
 struct CommaToken
 {
     enum Token_Tag tag;
@@ -72,6 +86,8 @@ typedef struct VarToken *VarToken;
 typedef struct OpToken *OpToken;
 typedef struct LBracketToken *LBracketToken;
 typedef struct RBracketToken *RBracketToken;
+typedef struct LBraceToken *LBraceToken;
+typedef struct RBraceToken *RBraceToken;
 typedef struct CommaToken *CommaToken;
 typedef struct DefunToken *DefunToken;
 

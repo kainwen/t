@@ -11,6 +11,8 @@ def                  { return DefunToken_T; }
 [+\-*/]              { return OpToken_T; }
 [(]                  { return LBracketToken_T; }
 [)]                  { return RBracketToken_T; }
+[{]                  { return LBraceToken_T; }
+[}]                  { return RBraceToken_T; }
 [,]                  { return CommaToken_T; }
 [ \n\t] ;
 

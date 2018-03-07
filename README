@@ -1,10 +1,5 @@
 # LLVM tutorial
 
-## Requirements
-
-* libcii
-* Check
-
 ## Language
 
 def fib(x)

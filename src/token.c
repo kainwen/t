@@ -1,10 +1,12 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "token.h"
 
 #include "cii/mem.h"
 #include "cii/except.h"
+#include "cii/assert.h"
 
 
 #define NEW_TOKEN(t)   t tok; \
@@ -22,6 +24,7 @@ List_T
 tokenize(const char *fn)
 {
     extern FILE *yyin;
+    extern int yylex();
     List_T l = NULL;
     
     yyin = fopen(fn, "r");
@@ -77,6 +80,18 @@ make_token(int token_tag)
     case RBracketToken_T:
     {
         NEW_TOKEN(RBracketToken);
+        result = tok;
+        break;
+    }
+    case LBraceToken_T:
+    {
+        NEW_TOKEN(LBraceToken);
+        result = tok;
+        break;
+    }
+    case RBraceToken_T:
+    {
+        NEW_TOKEN(RBraceToken);
         result = tok;
         break;
     }

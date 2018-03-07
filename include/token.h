@@ -15,7 +15,11 @@ enum Token_Tag
     LBraceToken_T,
     RBraceToken_T,
     CommaToken_T,
-    DefunToken_T
+    DefunToken_T,
+    IfToken_T,
+    ElseToken_T,
+    LSqBraceToken_T,
+    RSqBraceToken_T
 };
 
 struct Token
@@ -41,7 +45,6 @@ struct OpToken
 {
     enum Token_Tag tag;
     char raw_text[MAX_TOKEN_LEN];
-    char op;
 };
 
 struct LBracketToken
@@ -80,6 +83,30 @@ struct DefunToken
     char raw_text[MAX_TOKEN_LEN];
 };
 
+struct IfToken
+{
+    enum Token_Tag tag;
+    char raw_text[MAX_TOKEN_LEN];
+};
+
+struct ElseToken
+{
+    enum Token_Tag tag;
+    char raw_text[MAX_TOKEN_LEN];
+};
+
+struct LSqBraceToken
+{
+    enum Token_Tag tag;
+    char raw_text[MAX_TOKEN_LEN];
+};
+
+struct RSqBraceToken
+{
+    enum Token_Tag tag;
+    char raw_text[MAX_TOKEN_LEN];
+};
+
 typedef struct Token *Token;
 typedef struct NumToken *NumToken;
 typedef struct VarToken *VarToken;
@@ -90,6 +117,10 @@ typedef struct LBraceToken *LBraceToken;
 typedef struct RBraceToken *RBraceToken;
 typedef struct CommaToken *CommaToken;
 typedef struct DefunToken *DefunToken;
+typedef struct IfToken *IfToken;
+typedef struct ElseToken *ElseToken;
+typedef struct LSqBraceToken *LSqBraceToken;
+typedef struct RSqBraceToken *RSqBraceToken;
 
 #define TOK_TAG(t) (((Token)(t))->tag)
 #define TOK_TEXT(t) (((Token)(t))->raw_text)

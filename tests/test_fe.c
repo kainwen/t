@@ -44,7 +44,6 @@ CTEST(suite_fe, test_tok) {
     l = l->rest;
     ASSERT_TRUE(IS_TOKEN(l->first, OpToken));
     ASSERT_STR(TOK_TEXT(l->first), "-");
-    ASSERT_EQUAL(((OpToken)(l->first))->op, '-');
     /* ) */
     l = l->rest;
     ASSERT_TRUE(IS_TOKEN(l->first, RBracketToken));
@@ -57,6 +56,38 @@ CTEST(suite_fe, test_tok) {
     l = l->rest;
     ASSERT_TRUE(IS_TOKEN(l->first, RBraceToken));
     ASSERT_STR(TOK_TEXT(l->first), "}");
+    /* if */
+    l = l->rest;
+    ASSERT_TRUE(IS_TOKEN(l->first, IfToken));
+    ASSERT_STR(TOK_TEXT(l->first), "if");
+    /* else */
+    l = l->rest;
+    ASSERT_TRUE(IS_TOKEN(l->first, ElseToken));
+    ASSERT_STR(TOK_TEXT(l->first), "else");
+    /* < */
+    l = l->rest;
+    ASSERT_TRUE(IS_TOKEN(l->first, OpToken));
+    ASSERT_STR(TOK_TEXT(l->first), "<");
+    /* > */
+    l = l->rest;
+    ASSERT_TRUE(IS_TOKEN(l->first, OpToken));
+    ASSERT_STR(TOK_TEXT(l->first), ">");
+    /* <= */
+    l = l->rest;
+    ASSERT_TRUE(IS_TOKEN(l->first, OpToken));
+    ASSERT_STR(TOK_TEXT(l->first), "<=");
+    /* >= */
+    l = l->rest;
+    ASSERT_TRUE(IS_TOKEN(l->first, OpToken));
+    ASSERT_STR(TOK_TEXT(l->first), ">=");
+    /* [ */
+    l = l->rest;
+    ASSERT_TRUE(IS_TOKEN(l->first, LSqBraceToken));
+    ASSERT_STR(TOK_TEXT(l->first), "[");
+    /* ] */
+    l = l->rest;
+    ASSERT_TRUE(IS_TOKEN(l->first, RSqBraceToken));
+    ASSERT_STR(TOK_TEXT(l->first), "]");
 }
 
 CTEST(suite_fe, test_parse1) {
@@ -83,7 +114,7 @@ CTEST(suite_fe, test_parse3) {
     ExprAst e = parse(tokens);
 
     ASSERT_TRUE(e->tag == BinExprAst_T);
-    ASSERT_EQUAL(((BinExprAst)e)->op, '-');
+    ASSERT_STR(((BinExprAst)e)->op, "-");
 
     ExprAst LHS = ((BinExprAst)e)->LHS;
     ExprAst RHS = ((BinExprAst)e)->RHS;
@@ -92,7 +123,7 @@ CTEST(suite_fe, test_parse3) {
     ASSERT_DBL_NEAR(((NumExprAst)LHS)->val, 3.0);
 
     ASSERT_TRUE(RHS->tag == BinExprAst_T);
-    ASSERT_EQUAL(((BinExprAst)RHS)->op, '*');
+    ASSERT_STR(((BinExprAst)RHS)->op, "*");
 
     ExprAst LHS1 = ((BinExprAst)RHS)->LHS;
     ExprAst RHS1 = ((BinExprAst)RHS)->RHS;
@@ -162,7 +193,7 @@ CTEST(suite_fe, test_parse5) {
     ExprAst body = ((FunctionAst)e)->body;
     
     ASSERT_TRUE(body->tag == BinExprAst_T);
-    ASSERT_EQUAL(((BinExprAst)body)->op, '+');
+    ASSERT_STR(((BinExprAst)body)->op, "+");
 
     ExprAst LHS = ((BinExprAst)body)->LHS;
     
@@ -191,6 +222,23 @@ CTEST(suite_fe, test_parse5) {
 
     ASSERT_TRUE(arg2->tag == VarExprAst_T);
     ASSERT_STR(arg2->name, "x");
+}
+
+CTEST(suite_fe, test_parse6) {
+    char *fn = path_join(test_data_path, "test_parse.6");
+    List_T tokens = tokenize(fn);
+    ExprAst e = parse(tokens);
+
+    ASSERT_TRUE(e->tag == CmpExprAst_T);
+    ASSERT_STR(((CmpExprAst)e)->op, "<=");
+
+    ExprAst C1 = ((CmpExprAst)e)->C1;
+    ExprAst C2 = ((CmpExprAst)e)->C2;
+
+    ASSERT_TRUE(C1->tag == NumExprAst_T);
+    ASSERT_TRUE(C2->tag == NumExprAst_T);
+    ASSERT_DBL_NEAR(((NumExprAst)C1)->val, 1.0);
+    ASSERT_DBL_NEAR(((NumExprAst)C2)->val, 2.0);
 }
 
 int main(int argc, char *argv[])

@@ -67,7 +67,6 @@ make_token(int token_tag)
     case OpToken_T:
     {
         NEW_TOKEN(OpToken);
-        tok->op = yytext[0];
         result = tok;
         break;
     }
@@ -104,6 +103,30 @@ make_token(int token_tag)
     case DefunToken_T:
     {
         NEW_TOKEN(DefunToken);
+        result = tok;
+        break;
+    }
+    case IfToken_T:
+    {
+        NEW_TOKEN(IfToken);
+        result = tok;
+        break;
+    }
+    case ElseToken_T:
+    {
+        NEW_TOKEN(ElseToken);
+        result = tok;
+        break;
+    }
+    case LSqBraceToken_T:
+    {
+        NEW_TOKEN(LSqBraceToken);
+        result = tok;
+        break;
+    }
+    case RSqBraceToken_T:
+    {
+        NEW_TOKEN(RSqBraceToken);
         result = tok;
         break;
     }

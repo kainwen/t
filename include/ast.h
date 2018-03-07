@@ -5,7 +5,7 @@
 
 enum Tag
 {
-    NumExprAst_T,
+    NumExprAst_T=97,
     VarExprAst_T,
     BinExprAst_T,
     CallExprAst_T,
@@ -78,6 +78,6 @@ typedef struct FunctionAst* FunctionAst;
 #define TAG(expr_ptr) (((ExprAst)(expr_ptr))->tag)
 #define IsA(expr_ptr,_type_) (TAG(expr_ptr) == _type_##_T)
 
-extern ParseResult parse_exp(List_T Tokens);
+extern ExprAst parse(List_T Tokens);
 
 #endif

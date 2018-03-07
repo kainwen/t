@@ -15,6 +15,9 @@ find_package(FLEX REQUIRED)
 find_package(CII REQUIRED)
 find_package(CTest REQUIRED)
 
+############### Set Compile Flags ##################
+set(CMAKE_C_FLAGS_DEBUG "-g")
+
 ############### add subdirectories #################
 add_subdirectory(src)
 add_subdirectory(tests)

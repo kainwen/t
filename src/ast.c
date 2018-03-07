@@ -20,11 +20,21 @@ static void handle_call(void *first, List_T Tokens, ParseResult pr);
 static void handle_defun(void *first, List_T Tokens, ParseResult pr);
 static void handle_prototype(void *first, List_T Tokens, ParseResult pr);
 static ParseResult parse_multi(ParseFunc_T parse_func , List_T Tokens, const char *delim);
+static ParseResult parse_exp(List_T Tokens);
 
 Except_T Parse_Failed = { "Parse Failed" };
 
+ExprAst
+parse(List_T Tokens)
+{
+    ParseResult pr = parse_exp(Tokens);
+    assert(pr->Rem_tokens == NULL);
+    return pr->expr_ast;
+}
 
-ParseResult parse_exp(List_T Tokens)
+
+static ParseResult
+parse_exp(List_T Tokens)
 {
     ParseResult pr;
     
@@ -86,7 +96,7 @@ handle_num(void* first, List_T Tokens, ParseResult pr)
     num_expr->tag = NumExprAst_T;
     num_expr->val = num_token->num;
 
-    pr->expr_ast = num_expr;
+    pr->expr_ast = (ExprAst)num_expr;
     pr->Rem_tokens = Tokens;
 }
 
@@ -102,7 +112,7 @@ handle_var(void *first, List_T Tokens, ParseResult pr)
     var_expr->tag = VarExprAst_T;
     var_expr->name = var_token->raw_text;
     
-    pr->expr_ast = var_expr;
+    pr->expr_ast = (ExprAst)var_expr;
     pr->Rem_tokens = Tokens;
 }
 
@@ -127,7 +137,7 @@ handle_bin(void *first, List_T Tokens, ParseResult pr)
     bin_expr->LHS = pr1->expr_ast;
     bin_expr->RHS = pr2->expr_ast;
 
-    pr->expr_ast = bin_expr;
+    pr->expr_ast = (ExprAst)bin_expr;
     pr->Rem_tokens = R3;
 }
 
@@ -148,7 +158,7 @@ handle_call(void *first, List_T Tokens, ParseResult pr)
     call_expr->callee = pr1->expr_ast;
     call_expr->args = pr2->list_result;
 
-    pr->expr_ast = call_expr;
+    pr->expr_ast = (ExprAst)call_expr;
     pr->Rem_tokens = R1;
 }
 
@@ -170,10 +180,10 @@ handle_defun(void *first, List_T Tokens, ParseResult pr)
     ParseResult pr2;
     pr2 = parse_exp(pr1->Rem_tokens);
 
-    func_expr->proto = pr1->expr_ast;
-    func_expr->body = pr2->expr_ast;
+    func_expr->proto = (PrototypeAst)(pr1->expr_ast);
+    func_expr->body = (ExprAst)(pr2->expr_ast);
     
-    pr->expr_ast = func_expr;
+    pr->expr_ast = (ExprAst)func_expr;
     pr->Rem_tokens = pr2->Rem_tokens;
 }
 
@@ -194,7 +204,7 @@ handle_prototype(void *first, List_T Tokens, ParseResult pr)
     assert(Tokens);
     handle_var(Tokens->first, Tokens->rest, pr1);
 
-    VarExprAst var = pr1->expr_ast;
+    VarExprAst var = (VarExprAst)(pr1->expr_ast);
     
     List_T R1 = wait_token(pr1->Rem_tokens, "(");
     ParseResult pr2 = parse_multi(parse_exp, R1, ",");
@@ -203,7 +213,7 @@ handle_prototype(void *first, List_T Tokens, ParseResult pr)
     prototype->function_name = var->name;
     prototype->args = pr2->list_result;
 
-    pr->expr_ast = prototype;
+    pr->expr_ast = (ExprAst)prototype;
     pr->Rem_tokens = R2;
 }
 
@@ -240,6 +250,7 @@ parse_multi(ParseFunc_T parse_func , List_T Tokens, const char *delim)
         {
             ParseResult pr2;
             NEW0(pr2);
+            list_result = List_reverse(list_result);
             pr2->list_result = list_result;
             pr2->Rem_tokens = pr->Rem_tokens;
             return pr2;

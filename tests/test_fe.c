@@ -1,17 +1,22 @@
-#include <stdio.h>
+#include <stddef.h>
 
-#include "cii/list.h"
-#include "token.h"
+#define CTEST_MAIN
+#define CTEST_SEGFAULT
 
 #include "ctest.h"
 
+#include "cii/list.h"
+
+#include "token.h"
+#include "tests/utils.h"
+
+
+char *test_data_path = NULL;
+
 
 CTEST(suite1, test1) {
-    char *fn = "/tmp/test_tok";
-    FILE* f = fopen(fn, "w");
-    fprintf(f, "def f(1.2, -)\n");
-    fclose(f);
-
+    char *fn = path_join(test_data_path, "test_tok");
+    
     List_T l = tokenize(fn);
     /* def */
     ASSERT_TRUE(IS_TOKEN(l->first, DefunToken));
@@ -33,7 +38,15 @@ CTEST(suite1, test1) {
     ASSERT_TRUE(IS_TOKEN(l->rest->rest->rest->rest->rest->first, OpToken));
     ASSERT_STR(TOK_TEXT(l->rest->rest->rest->rest->rest->first), "-");
     ASSERT_EQUAL(((OpToken)(l->rest->rest->rest->rest->rest->first))->op, '-');
-    /* , */
+    /* ) */
     ASSERT_TRUE(IS_TOKEN(l->rest->rest->rest->rest->rest->rest->first, RBracketToken));
     ASSERT_STR(TOK_TEXT(l->rest->rest->rest->rest->rest->rest->first), ")");
+}
+
+
+int main(int argc, const char *argv[])
+{
+    test_data_path = argv[1];
+    int result = ctest_main(0, NULL);
+    return result;
 }

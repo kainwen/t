@@ -13,6 +13,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${PROJECT_SOURCE_DIR}/cmakes")
 
 find_package(FLEX REQUIRED)
 find_package(CII REQUIRED)
+find_package(CTest REQUIRED)
 
 ############### add subdirectories #################
 add_subdirectory(src)
@@ -21,4 +22,5 @@ add_subdirectory(tests)
 ###############################################################################
 # Unit tests
 enable_testing()
-add_test(NAME test_ COMMAND test_tok)
+set(UNIT_TEST_DATA_PATH "${PROJECT_SOURCE_DIR}/tests/data")
+add_test(NAME test_fe COMMAND test_fe "${UNIT_TEST_DATA_PATH}")

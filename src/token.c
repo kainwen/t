@@ -112,6 +112,12 @@ make_token(int token_tag)
         result = tok;
         break;
     }
+    case ThenToken_T:
+    {
+        NEW_TOKEN(ThenToken);
+        result = tok;
+        break;
+    }
     case ElseToken_T:
     {
         NEW_TOKEN(ElseToken);

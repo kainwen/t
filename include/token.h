@@ -17,6 +17,7 @@ enum Token_Tag
     CommaToken_T,
     DefunToken_T,
     IfToken_T,
+    ThenToken_T,
     ElseToken_T,
     LSqBraceToken_T,
     RSqBraceToken_T
@@ -89,6 +90,12 @@ struct IfToken
     char raw_text[MAX_TOKEN_LEN];
 };
 
+struct ThenToken
+{
+    enum Token_Tag tag;
+    char raw_text[MAX_TOKEN_LEN];
+};
+
 struct ElseToken
 {
     enum Token_Tag tag;
@@ -118,6 +125,7 @@ typedef struct RBraceToken *RBraceToken;
 typedef struct CommaToken *CommaToken;
 typedef struct DefunToken *DefunToken;
 typedef struct IfToken *IfToken;
+typedef struct ThenToken *ThenToken;
 typedef struct ElseToken *ElseToken;
 typedef struct LSqBraceToken *LSqBraceToken;
 typedef struct RSqBraceToken *RSqBraceToken;

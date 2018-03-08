@@ -6,6 +6,7 @@
 
 %%
 if                   { return IfToken_T; }
+then                 { return ThenToken_T; }
 else                 { return ElseToken_T; }
 [[]                  { return LSqBraceToken_T; }
 []]                  { return RSqBraceToken_T; }

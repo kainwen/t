@@ -88,6 +88,11 @@ CTEST(suite_fe, test_tok) {
     l = l->rest;
     ASSERT_TRUE(IS_TOKEN(l->first, RSqBraceToken));
     ASSERT_STR(TOK_TEXT(l->first), "]");
+
+    /* then */
+    l = l->rest;
+    ASSERT_TRUE(IS_TOKEN(l->first, ThenToken));
+    ASSERT_STR(TOK_TEXT(l->first), "then");
 }
 
 CTEST(suite_fe, test_parse1) {
@@ -239,6 +244,47 @@ CTEST(suite_fe, test_parse6) {
     ASSERT_TRUE(C2->tag == NumExprAst_T);
     ASSERT_DBL_NEAR(((NumExprAst)C1)->val, 1.0);
     ASSERT_DBL_NEAR(((NumExprAst)C2)->val, 2.0);
+}
+
+CTEST(suite_fe, test_parse7) {
+    char *fn = path_join(test_data_path, "test_parse.7");
+    List_T tokens = tokenize(fn);
+    ExprAst e = parse(tokens);
+
+    ASSERT_TRUE(e->tag == IfExprAst_T);
+    
+    CmpExprAst cmp = ((IfExprAst)e)->cmp;
+    ASSERT_TRUE(cmp->tag == CmpExprAst_T);
+    ASSERT_STR(cmp->op, ">=");
+
+    NumExprAst C1 = (NumExprAst)(cmp->C1);
+    NumExprAst C2 = (NumExprAst)(cmp->C2);
+    ASSERT_TRUE(C1->tag == NumExprAst_T);
+    ASSERT_TRUE(C2->tag == NumExprAst_T);
+    ASSERT_DBL_NEAR(C1->val, 5.0);
+    ASSERT_DBL_NEAR(C2->val, 4.0);
+
+    VarExprAst then_body = (VarExprAst)(((IfExprAst)e)->then_body);
+    ASSERT_TRUE(then_body->tag == VarExprAst_T);
+    ASSERT_STR(then_body->name, "a");
+    
+    IfExprAst else_body = (IfExprAst)(((IfExprAst)e)->else_body);
+    cmp = else_body->cmp;
+    ASSERT_TRUE(cmp->tag == CmpExprAst_T);
+    ASSERT_STR(cmp->op, "<=");
+
+    C1 = (NumExprAst)(cmp->C1);
+    C2 = (NumExprAst)(cmp->C2);
+    ASSERT_TRUE(C1->tag == NumExprAst_T);
+    ASSERT_TRUE(C2->tag == NumExprAst_T);
+    ASSERT_DBL_NEAR(C1->val, 2.0);
+    ASSERT_DBL_NEAR(C2->val, 9.2);
+
+    then_body = (VarExprAst)(else_body->then_body);
+    ASSERT_TRUE(then_body->tag == VarExprAst_T);
+    ASSERT_STR(then_body->name, "c");
+
+    ASSERT_NULL(else_body->else_body);
 }
 
 int main(int argc, char *argv[])

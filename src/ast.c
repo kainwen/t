@@ -20,6 +20,7 @@ static void handle_call(void *first, List_T Tokens, ParseResult pr);
 static void handle_defun(void *first, List_T Tokens, ParseResult pr);
 static void handle_prototype(void *first, List_T Tokens, ParseResult pr);
 static void handle_cmp(void *first, List_T Tokens, ParseResult pr);
+static void handle_if(void *first, List_T Tokens, ParseResult pr);
 static ParseResult parse_multi(ParseFunc_T parse_func ,
                                List_T Tokens, const char *delim);
 static ParseResult parse_exp(List_T Tokens);
@@ -67,6 +68,9 @@ parse_exp(List_T Tokens)
         break;
     case LSqBraceToken_T:
         handle_cmp(Tokens->first, Tokens->rest, pr);
+        break;
+    case IfToken_T:
+        handle_if(Tokens->first, Tokens->rest, pr);
         break;
     default:
         RAISE(Parse_Failed);
@@ -253,6 +257,57 @@ handle_cmp(void *first, List_T Tokens, ParseResult pr)
 
     pr->expr_ast = (ExprAst)cmp_expr;
     pr->Rem_tokens = R3;
+}
+
+static void
+handle_if(void *first, List_T Tokens, ParseResult pr)
+{
+    IfExprAst if_expr;
+
+    IfToken if_token = first;
+    assert(IS_TOKEN(if_token, IfToken));
+
+    NEW0(if_expr);
+    if_expr->tag = IfExprAst_T;
+
+    ParseResult pr1;
+    pr1 = parse_exp(Tokens);
+
+    ExprAst cmp = pr1->expr_ast;
+    if_expr->cmp = (CmpExprAst)cmp;
+
+    List_T R1 = wait_token(pr1->Rem_tokens, "then");
+    
+    ParseResult pr2;
+    pr2 = parse_exp(R1);
+    if_expr->then_body = pr2->expr_ast;
+
+    /* test have else */
+    int has_else = 0;
+    
+    if (pr2->Rem_tokens)
+    {
+        Token t = (Token)(pr2->Rem_tokens->first);
+        if (IS_TOKEN(t, ElseToken))
+            has_else = 1;
+    }
+
+    if (has_else)
+    {
+        List_T R2 = wait_token(pr2->Rem_tokens, "else");
+        ParseResult pr3;
+        
+        pr3 = parse_exp(R2);
+        if_expr->else_body = pr3->expr_ast;
+
+        pr->expr_ast = (ExprAst)if_expr;
+        pr->Rem_tokens = pr3->Rem_tokens;
+    }
+    else
+    {
+        pr->expr_ast = (ExprAst)if_expr;
+        pr->Rem_tokens = pr2->Rem_tokens;
+    }
 }
 
 static ParseResult

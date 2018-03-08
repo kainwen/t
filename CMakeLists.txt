@@ -14,6 +14,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${PROJECT_SOURCE_DIR}/cmakes")
 find_package(FLEX REQUIRED)
 find_package(CII REQUIRED)
 find_package(Ctest REQUIRED)
+find_package(LLVM REQUIRED)
 
 ############### Set Compile Flags ##################
 set(CMAKE_C_FLAGS_DEBUG "-g")

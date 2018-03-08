@@ -15,7 +15,6 @@
                        strcpy(tok->raw_text, yytext)
 
 
-
 Except_T Unknow_Token = { "Unknown token" };
 
 static void *make_token(int token_tag);

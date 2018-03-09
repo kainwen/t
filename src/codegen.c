@@ -8,9 +8,14 @@
 
 #define TABLE_HINT_SIZE 20
 
+typedef LLVMValueRef (*BinLLVMBuildFuncType) (LLVMBuilderRef,
+                                              LLVMValueRef,
+                                              LLVMValueRef,
+                                              const char *);
 
 Except_T Unknown_Expr = { "Unknown Expr" };
 Except_T Unknown_Var_Name = { "Unknown Variable Name" };
+Except_T Unknown_Arith_Operator = { "Unknown Arith Operator" };
 
 static LLVMBuilderRef Builder;
 static LLVMContextRef Context;
@@ -23,6 +28,7 @@ static int cmp_var(const void *x, const void *y);
 static unsigned int hash_var(const void *key);
 static LLVMValueRef handle_num(NumExprAst expr_ast);
 static LLVMValueRef handle_var(VarExprAst expr_ast);
+static LLVMValueRef handle_bin(BinExprAst expr_ast);
 
 
 void
@@ -53,6 +59,9 @@ codegen(ExprAst expr_ast)
         break;
     case VarExprAst_T:
         value = handle_var((VarExprAst)expr_ast);
+        break;
+    case BinExprAst_T:
+        value = handle_bin((BinExprAst)expr_ast);
         break;
     default:
         RAISE(Unknown_Expr);
@@ -101,4 +110,42 @@ handle_var(VarExprAst expr_ast)
         RAISE(Unknown_Var_Name);
 
     return (LLVMValueRef)value;
+}
+
+static LLVMValueRef
+handle_bin(BinExprAst expr_ast)
+{
+    char *name;
+    char *op = expr_ast->op;
+    LLVMValueRef value, lhs, rhs;
+    BinLLVMBuildFuncType bin_build_func = NULL;
+    
+    if (strcmp(op, "+") == 0)
+    {
+        bin_build_func = LLVMBuildFAdd;
+        name = "addtmp";
+    }
+    else if (strcmp(op, "-") == 0)
+    {
+        bin_build_func = LLVMBuildFSub;
+        name = "subtmp";
+    }
+    else if (strcmp(op, "*") == 0)
+    {
+        bin_build_func = LLVMBuildFMul;
+        name = "multmp";
+    }
+    else if (strcmp(op, "/") == 0)
+    {
+        bin_build_func = LLVMBuildFDiv;
+        name = "divtmp";
+    }
+    else
+        RAISE(Unknown_Arith_Operator);
+
+    lhs = codegen(expr_ast->LHS);
+    rhs = codegen(expr_ast->RHS);
+    value = bin_build_func(Builder, lhs, rhs, name);
+
+    return value;
 }

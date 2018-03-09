@@ -161,10 +161,11 @@ handle_call(void *first, List_T Tokens, ParseResult pr)
     NEW(call_expr);
     call_expr->tag = CallExprAst_T;
     ParseResult pr1 = parse_exp(Tokens);
+    assert(IsA(pr1->expr_ast, VarExprAst));
     List_T R0 = wait_token(pr1->Rem_tokens, ",");
     ParseResult pr2 = parse_multi(parse_exp, R0, ",");
     List_T R1 = wait_token(pr2->Rem_tokens, "}");
-    call_expr->callee = pr1->expr_ast;
+    call_expr->callee = ((VarExprAst)(pr1->expr_ast))->name;
     call_expr->args = pr2->list_result;
 
     pr->expr_ast = (ExprAst)call_expr;

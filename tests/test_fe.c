@@ -147,10 +147,9 @@ CTEST(suite_fe, test_parse4) {
 
     ASSERT_TRUE(e->tag == CallExprAst_T);
     
-    ExprAst callee = ((CallExprAst)e)->callee;
+    char* callee = ((CallExprAst)e)->callee;
 
-    ASSERT_TRUE(callee->tag == VarExprAst_T);
-    ASSERT_STR(((VarExprAst)callee)->name, "f");
+    ASSERT_STR(callee, "f");
 
     List_T Args = ((CallExprAst)e)->args;
     
@@ -209,10 +208,9 @@ CTEST(suite_fe, test_parse5) {
     
     ASSERT_TRUE(RHS->tag == CallExprAst_T);
 
-    ExprAst callee = ((CallExprAst)RHS)->callee;
+    char *callee = ((CallExprAst)RHS)->callee;
 
-    ASSERT_TRUE(callee->tag == VarExprAst_T);
-    ASSERT_STR(((VarExprAst)callee)->name, "f");
+    ASSERT_STR(callee, "f");
 
     List_T args = ((CallExprAst)RHS)->args;
     

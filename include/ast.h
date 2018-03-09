@@ -29,7 +29,7 @@ struct NumExprAst
 struct VarExprAst
 {
     enum Tag tag;
-    const char *name;
+    char *name;
 };
 
 struct BinExprAst
@@ -43,14 +43,14 @@ struct BinExprAst
 struct CallExprAst
 {
     enum Tag tag;
-    struct ExprAst *callee;
+    char *callee;
     List_T args;
 };
 
 struct PrototypeAst
 {
     enum Tag tag;
-    const char *function_name;
+    char *function_name;
     List_T args;
 };
 

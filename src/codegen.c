@@ -2,6 +2,7 @@
 
 #include "cii/assert.h"
 #include "cii/except.h"
+#include "cii/mem.h"
 #include "cii/table.h"
 
 #include "codegen.h"
@@ -13,9 +14,17 @@ typedef LLVMValueRef (*BinLLVMBuildFuncType) (LLVMBuilderRef,
                                               LLVMValueRef,
                                               const char *);
 
+typedef struct Closure
+{
+    int index;
+    void *array;
+} Closure;
+
 Except_T Unknown_Expr = { "Unknown Expr" };
 Except_T Unknown_Var_Name = { "Unknown Variable Name" };
 Except_T Unknown_Arith_Operator = { "Unknown Arith Operator" };
+Except_T Unknown_Func_Name = { "Unknown Function Name" };
+Except_T Incorrect_Num_Args = { "Incorrect Number of Args" };
 
 static LLVMBuilderRef Builder;
 static LLVMContextRef Context;
@@ -26,9 +35,11 @@ static int INIT_CALLED = 0;
 
 static int cmp_var(const void *x, const void *y);
 static unsigned int hash_var(const void *key);
+static void set_Args(void **x, void *cl);
 static LLVMValueRef handle_num(NumExprAst expr_ast);
 static LLVMValueRef handle_var(VarExprAst expr_ast);
 static LLVMValueRef handle_bin(BinExprAst expr_ast);
+static LLVMValueRef handle_call(CallExprAst expr_ast);
 
 
 void
@@ -43,6 +54,13 @@ InitEnv(const char *module_name)
     NamedValues = Table_new(TABLE_HINT_SIZE, cmp_var, hash_var);
 
     INIT_CALLED = 1;
+}
+
+void
+DumpResult(void)
+{
+    assert(INIT_CALLED == 1);
+    LLVMDumpModule(Module);
 }
 
 LLVMValueRef
@@ -62,6 +80,9 @@ codegen(ExprAst expr_ast)
         break;
     case BinExprAst_T:
         value = handle_bin((BinExprAst)expr_ast);
+        break;
+    case CallExprAst_T:
+        value = handle_call((CallExprAst)expr_ast);
         break;
     default:
         RAISE(Unknown_Expr);
@@ -92,6 +113,16 @@ hash_var(const void *key)
 		hashVal &= ~g;
 	}
 	return hashVal;
+}
+
+static void
+set_Args(void **x, void *cl)
+{
+    Closure *cls = (Closure*)cl;
+    ExprAst expr_ast = *((ExprAst*)x);
+    LLVMValueRef value = codegen(expr_ast);
+    LLVMValueRef *Args = (LLVMValueRef *)(cls->array);
+    Args[cls->index++] = value;
 }
 
 static LLVMValueRef
@@ -147,5 +178,36 @@ handle_bin(BinExprAst expr_ast)
     rhs = codegen(expr_ast->RHS);
     value = bin_build_func(Builder, lhs, rhs, name);
 
+    return value;
+}
+
+static LLVMValueRef
+handle_call(CallExprAst expr_ast)
+{
+    void *func_val;
+    char *callee = expr_ast->callee;
+    LLVMValueRef func;
+    LLVMValueRef value;
+    int i;
+
+    func_val = Table_get(NamedValues, (void *)callee);
+    if (func_val == NULL)
+        RAISE(Unknown_Func_Name);
+
+    func = (LLVMValueRef)func_val;
+
+    List_T args = expr_ast->args;
+    if (List_length(args) != LLVMCountParams(func))
+        RAISE(Incorrect_Num_Args);
+
+    LLVMValueRef *Args;
+    Closure cl;
+    cl.index = 0;
+    cl.array = (void*)Args;
+    Args = ALLOC(sizeof(LLVMValueRef) * List_length(args));
+    List_map(args, set_Args, &cl);
+
+    value = LLVMBuildInvoke(Builder, func, Args, List_length(args),
+                            NULL, NULL, "func_call");
     return value;
 }

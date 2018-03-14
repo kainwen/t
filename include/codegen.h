@@ -7,5 +7,6 @@
 
 extern void InitEnv(const char *module_name);
 extern LLVMValueRef codegen(ExprAst expr_ast);
+extern void DumpResult(void);
 
 #endif

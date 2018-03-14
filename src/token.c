@@ -135,6 +135,18 @@ make_token(int token_tag)
         result = tok;
         break;
     }
+    case SemicolonToken_T:
+    {
+        NEW_TOKEN(SemicolonToken);
+        result = tok;
+        break;
+    }
+    case ExternToken_T:
+    {
+        NEW_TOKEN(ExternToken);
+        result = tok;
+        break;
+    }
     default:
         RAISE(Unknow_Token);
     }

@@ -20,7 +20,9 @@ enum Token_Tag
     ThenToken_T,
     ElseToken_T,
     LSqBraceToken_T,
-    RSqBraceToken_T
+    RSqBraceToken_T,
+    SemicolonToken_T,
+    ExternToken_T
 };
 
 struct Token
@@ -114,6 +116,18 @@ struct RSqBraceToken
     char raw_text[MAX_TOKEN_LEN];
 };
 
+struct SemicolonToken
+{
+    enum Token_Tag tag;
+    char raw_text[MAX_TOKEN_LEN];
+};
+
+struct ExternToken
+{
+    enum Token_Tag tag;
+    char raw_text[MAX_TOKEN_LEN];
+};
+
 typedef struct Token *Token;
 typedef struct NumToken *NumToken;
 typedef struct VarToken *VarToken;
@@ -129,6 +143,8 @@ typedef struct ThenToken *ThenToken;
 typedef struct ElseToken *ElseToken;
 typedef struct LSqBraceToken *LSqBraceToken;
 typedef struct RSqBraceToken *RSqBraceToken;
+typedef struct SemicolonToken *SemicolonToken;
+typedef struct ExternToken *ExternToken;
 
 #define TOK_TAG(t) (((Token)(t))->tag)
 #define TOK_TEXT(t) (((Token)(t))->raw_text)

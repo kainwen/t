@@ -93,6 +93,16 @@ CTEST(suite_fe, test_tok) {
     l = l->rest;
     ASSERT_TRUE(IS_TOKEN(l->first, ThenToken));
     ASSERT_STR(TOK_TEXT(l->first), "then");
+
+    /* ; */
+    l = l->rest;
+    ASSERT_TRUE(IS_TOKEN(l->first, SemicolonToken));
+    ASSERT_STR(TOK_TEXT(l->first), ";");
+
+    /* extern */
+    l = l->rest;
+    ASSERT_TRUE(IS_TOKEN(l->first, ExternToken));
+    ASSERT_STR(TOK_TEXT(l->first), "extern");
 }
 
 CTEST(suite_fe, test_parse1) {
@@ -283,6 +293,25 @@ CTEST(suite_fe, test_parse7) {
     ASSERT_STR(then_body->name, "c");
 
     ASSERT_NULL(else_body->else_body);
+}
+
+CTEST(suite_fe, test_parse8) {
+    char *fn = path_join(test_data_path, "test_parse.8");
+    List_T tokens = tokenize(fn);
+    ExprAst e = parse(tokens);
+
+    ASSERT_TRUE(((PrototypeAst)e)->tag == PrototypeAst_T);
+    ASSERT_STR(((PrototypeAst)e)->function_name, "log");
+
+    List_T args = ((PrototypeAst)e)->args;
+    ASSERT_TRUE(List_length(args) == 2);
+    
+    VarExprAst arg1 = (VarExprAst)(args->first);
+    VarExprAst arg2 = (VarExprAst)(args->rest->first);
+    ASSERT_TRUE(arg1->tag == VarExprAst_T);
+    ASSERT_TRUE(arg2->tag == VarExprAst_T);
+    ASSERT_STR(arg1->name, "base");
+    ASSERT_STR(arg2->name, "x");
 }
 
 int main(int argc, char *argv[])

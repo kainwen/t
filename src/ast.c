@@ -11,7 +11,9 @@
 
 
 typedef ParseResult (*ParseFunc_T) (List_T);
+typedef void (*VerifyFunc_T) (ExprAst);
 
+static void assert_var(ExprAst expr_ast);
 static List_T wait_token(List_T Tokens, const char *t);
 static void handle_num(void* first, List_T Tokens, ParseResult pr);
 static void handle_var(void *first, List_T Tokens, ParseResult pr);
@@ -21,11 +23,14 @@ static void handle_defun(void *first, List_T Tokens, ParseResult pr);
 static void handle_prototype(void *first, List_T Tokens, ParseResult pr);
 static void handle_cmp(void *first, List_T Tokens, ParseResult pr);
 static void handle_if(void *first, List_T Tokens, ParseResult pr);
+static void handle_extern_dec(void *first, List_T Tokens, ParseResult pr);
 static ParseResult parse_multi(ParseFunc_T parse_func ,
-                               List_T Tokens, const char *delim);
+                               List_T Tokens, const char *delim,
+                               VerifyFunc_T verify_func);
 static ParseResult parse_exp(List_T Tokens);
 
 Except_T Parse_Failed = { "Parse Failed" };
+Except_T Parse_Multi_Assert_Var_Fail = { "Parse_Multi Assert Var Fail" };
 
 ExprAst
 parse(List_T Tokens)
@@ -71,6 +76,9 @@ parse_exp(List_T Tokens)
         break;
     case IfToken_T:
         handle_if(Tokens->first, Tokens->rest, pr);
+        break;
+    case ExternToken_T:
+        handle_extern_dec(Tokens->first, Tokens->rest, pr);
         break;
     default:
         RAISE(Parse_Failed);
@@ -163,7 +171,7 @@ handle_call(void *first, List_T Tokens, ParseResult pr)
     ParseResult pr1 = parse_exp(Tokens);
     assert(IsA(pr1->expr_ast, VarExprAst));
     List_T R0 = wait_token(pr1->Rem_tokens, ",");
-    ParseResult pr2 = parse_multi(parse_exp, R0, ",");
+    ParseResult pr2 = parse_multi(parse_exp, R0, ",", NULL);
     List_T R1 = wait_token(pr2->Rem_tokens, "}");
     call_expr->callee = ((VarExprAst)(pr1->expr_ast))->name;
     call_expr->args = pr2->list_result;
@@ -217,7 +225,7 @@ handle_prototype(void *first, List_T Tokens, ParseResult pr)
     VarExprAst var = (VarExprAst)(pr1->expr_ast);
     
     List_T R1 = wait_token(pr1->Rem_tokens, "(");
-    ParseResult pr2 = parse_multi(parse_exp, R1, ",");
+    ParseResult pr2 = parse_multi(parse_exp, R1, ",", assert_var);
     List_T R2 = wait_token(pr2->Rem_tokens, ")");
 
     prototype->function_name = var->name;
@@ -311,8 +319,26 @@ handle_if(void *first, List_T Tokens, ParseResult pr)
     }
 }
 
+static void
+handle_extern_dec(void *first, List_T Tokens, ParseResult pr)
+{
+    DefunToken defun_token;
+    NEW(defun_token);
+    defun_token->tag = DefunToken_T;
+    
+    ParseResult pr1;
+    NEW0(pr1);
+    handle_prototype((void *)defun_token, Tokens, pr1);
+
+    List_T R = wait_token(pr1->Rem_tokens, ";");
+    
+    pr->expr_ast = pr1->expr_ast;
+    pr->Rem_tokens = R;
+}
+
 static ParseResult
-parse_multi(ParseFunc_T parse_func , List_T Tokens, const char *delim)
+parse_multi(ParseFunc_T parse_func , List_T Tokens,
+            const char *delim, VerifyFunc_T verify_func)
 {
     volatile ParseResult pr;
     volatile List_T list_result = NULL;
@@ -324,6 +350,8 @@ parse_multi(ParseFunc_T parse_func , List_T Tokens, const char *delim)
         TRY
         {
             pr = parse_func(Rem_Toks);
+            if (verify_func)
+                verify_func(pr->expr_ast);
             list_result = List_push(list_result, pr->expr_ast);
         }
         EXCEPT(Parse_Failed)
@@ -351,4 +379,11 @@ parse_multi(ParseFunc_T parse_func , List_T Tokens, const char *delim)
         }
         END_TRY;
     }
+}
+
+static void
+assert_var(ExprAst expr_ast)
+{
+    if (!IsA(expr_ast, VarExprAst))
+        RAISE(Parse_Multi_Assert_Var_Fail);
 }

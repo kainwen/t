@@ -34,7 +34,7 @@ struct VarExprAst
 
 struct BinExprAst
 {
-    enum Tag tag;
+p    enum Tag tag;
     char* op;
     struct ExprAst *LHS;
     struct ExprAst *RHS;

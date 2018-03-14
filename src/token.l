@@ -8,6 +8,7 @@
 if                   { return IfToken_T; }
 then                 { return ThenToken_T; }
 else                 { return ElseToken_T; }
+extern               { return ExternToken_T; }
 [[]                  { return LSqBraceToken_T; }
 []]                  { return RSqBraceToken_T; }
 def                  { return DefunToken_T; }
@@ -21,6 +22,7 @@ def                  { return DefunToken_T; }
 [{]                  { return LBraceToken_T; }
 [}]                  { return RBraceToken_T; }
 [,]                  { return CommaToken_T; }
+[;]                  { return SemicolonToken_T; }
 [ \n\t] ;
 
 %%

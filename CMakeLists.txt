@@ -8,6 +8,7 @@ set(LIBRARY_OUTPUT_PATH "${PROJECT_BINARY_DIR}/lib")
 ############### Set Include Dir ####################
 include_directories ("${PROJECT_SOURCE_DIR}/include")
 
+message("${CMAKE_ROOT}")
 ############### check dependencies #################
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${PROJECT_SOURCE_DIR}/cmakes")
 

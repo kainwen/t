@@ -8,3 +8,5 @@ find_path(CII_INCLUDE_DIR cii
 
 set(CII_INCLUDE_DIRS ${CII_INCLUDE_DIR})
 set(CII_LIBRARIES ${CII_LIBRARY})
+
+message("-- Found CII at ${CII_INCLUDE_DIR}.")

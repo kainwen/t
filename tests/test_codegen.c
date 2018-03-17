@@ -25,7 +25,7 @@ CTEST(suite_codegen, test_codegen1)
     ExprAst e = parse(tokens);
     
     InitEnv("test_module1");
-    LLVMValueRef value = codegen(e);
+    codegen(e);
 
     freopen("/tmp/haha", "w", stderr);
     
@@ -38,4 +38,3 @@ int main(int argc, char *argv[])
     int result = ctest_main(0, NULL);
     return result;
 }
-

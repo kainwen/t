@@ -1,8 +1,6 @@
 #include <string.h>
-#include <stddef.h>
 
 #include "cii/assert.h"
-#include "cii/except.h"
 #include "cii/mem.h"
 #include "cii/table.h"
 

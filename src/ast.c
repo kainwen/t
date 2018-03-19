@@ -32,12 +32,18 @@ static ParseResult parse_exp(List_T Tokens);
 Except_T Parse_Failed = { "Parse Failed" };
 Except_T Parse_Multi_Assert_Var_Fail = { "Parse_Multi Assert Var Fail" };
 
-ExprAst
+List_T
 parse(List_T Tokens)
 {
-    ParseResult pr = parse_exp(Tokens);
-    assert(pr->Rem_tokens == NULL);
-    return pr->expr_ast;
+    List_T es = NULL;
+    while (Tokens)
+    {
+        ParseResult pr = parse_exp(Tokens);
+        es = List_push(es, pr->expr_ast);
+        Tokens = pr->Rem_tokens;
+    }
+
+    return List_reverse(es);
 }
 
 

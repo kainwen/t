@@ -98,6 +98,6 @@ typedef struct CmpExprAst* CmpExprAst;
 #define TAG(expr_ptr) (((ExprAst)(expr_ptr))->tag)
 #define IsA(expr_ptr,_type_) (TAG(expr_ptr) == _type_##_T)
 
-extern ExprAst parse(List_T Tokens);
+extern List_T parse(List_T Tokens);
 
 #endif

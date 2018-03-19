@@ -1,0 +1,13 @@
+1123.56
+asd123
+-(3,*(5.0, 2))
+{f, 1, 2, 3}
+def f(x, y)
+    +(x, {f, y, x})
+[<= , 1, 2]
+if [>=, 5.0, 4.0]
+then a
+else
+   if [<= , 2.0, 9.2]
+   then c   
+extern log(base, x);

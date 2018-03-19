@@ -13,6 +13,17 @@
 #include "tests/utils.h"
 
 
+#define CHECK_VAR(e,s) do \
+                     { \
+                        ASSERT_TRUE((e)->tag == VarExprAst_T);\
+                        ASSERT_STR(((VarExprAst)(e))->name, s);\
+                     } while (0)
+#define CHECK_NUM(e,v) do \
+                       { \
+                         ASSERT_TRUE((e)->tag == NumExprAst_T);\
+                         ASSERT_DBL_NEAR(((NumExprAst)(e))->val, v);\
+                       } while(0)
+
 char *test_data_path = NULL;
 
 
@@ -105,213 +116,70 @@ CTEST(suite_fe, test_tok) {
     ASSERT_STR(TOK_TEXT(l->first), "extern");
 }
 
-CTEST(suite_fe, test_parse1) {
-    char *fn = path_join(test_data_path, "test_parse.1");
+CTEST(suite_fe, test_parse) {
+    ExprAst e;
+    char *fn = path_join(test_data_path, "test_parse");
+
     List_T tokens = tokenize(fn);
-    ExprAst e = parse(tokens);
+    List_T es = parse(tokens);
 
-    ASSERT_TRUE(e->tag == NumExprAst_T);
-    ASSERT_DBL_NEAR(((NumExprAst)e)->val, 1123.56);
-}
+    /* Number */
+    e = es->first;
+    CHECK_NUM(e, 1123.56);
 
-CTEST(suite_fe, test_parse2) {
-    char *fn = path_join(test_data_path, "test_parse.2");
-    List_T tokens = tokenize(fn);
-    ExprAst e = parse(tokens);
+    /* Var */
+    es = es->rest;
+    e = es->first;
+    CHECK_VAR(e, "asd123");
 
-    ASSERT_TRUE(e->tag == VarExprAst_T);
-    ASSERT_STR(((VarExprAst)e)->name, "asd123");
-}
-
-CTEST(suite_fe, test_parse3) {
-    char *fn = path_join(test_data_path, "test_parse.3");
-    List_T tokens = tokenize(fn);
-    ExprAst e = parse(tokens);
-
+    /* BinExp */
+    es = es->rest;
+    e = es->first;
     ASSERT_TRUE(e->tag == BinExprAst_T);
     ASSERT_STR(((BinExprAst)e)->op, "-");
 
-    ExprAst LHS = ((BinExprAst)e)->LHS;
-    ExprAst RHS = ((BinExprAst)e)->RHS;
+    ExprAst lhs, rhs;
+    lhs = ((BinExprAst)e)->LHS;
+    CHECK_NUM(lhs, 3.0);
 
-    ASSERT_TRUE(LHS->tag == NumExprAst_T);
-    ASSERT_DBL_NEAR(((NumExprAst)LHS)->val, 3.0);
+    rhs = ((BinExprAst)e)->RHS;
+    ASSERT_TRUE(rhs->tag == BinExprAst_T);
+    ASSERT_STR(((BinExprAst)rhs)->op, "*");
+    CHECK_NUM(((BinExprAst)rhs)->LHS, 5.0);
+    CHECK_NUM(((BinExprAst)rhs)->RHS, 2.0);
 
-    ASSERT_TRUE(RHS->tag == BinExprAst_T);
-    ASSERT_STR(((BinExprAst)RHS)->op, "*");
-
-    ExprAst LHS1 = ((BinExprAst)RHS)->LHS;
-    ExprAst RHS1 = ((BinExprAst)RHS)->RHS;
-
-    ASSERT_TRUE(LHS1->tag == NumExprAst_T);
-    ASSERT_DBL_NEAR(((NumExprAst)LHS1)->val, 5.0);
-    
-    ASSERT_TRUE(RHS1->tag == NumExprAst_T);
-    ASSERT_DBL_NEAR(((NumExprAst)RHS1)->val, 2.0);
-}
-
-CTEST(suite_fe, test_parse4) {
-    char *fn = path_join(test_data_path, "test_parse.4");
-    List_T tokens = tokenize(fn);
-    ExprAst e = parse(tokens);
-
+    /* FunCall */
+    es = es->rest;
+    e = es->first;
     ASSERT_TRUE(e->tag == CallExprAst_T);
-    
-    char* callee = ((CallExprAst)e)->callee;
+    ASSERT_STR(((CallExprAst)e)->callee, "f");
+    List_T args = ((CallExprAst)e)->args;
+    ASSERT_TRUE(List_length(args) == 3);
+    e = args->first;
+    CHECK_NUM(e, 1.0);
+    args = args->rest;
+    e = args->first;
+    CHECK_NUM(e, 2.0);
+    args = args->rest;
+    e = args->first;
+    CHECK_NUM(e, 3.0);
 
-    ASSERT_STR(callee, "f");
-
-    List_T Args = ((CallExprAst)e)->args;
-    
-    ASSERT_TRUE(List_length(Args) == 3);
-
-    NumExprAst n1 = (NumExprAst)(Args->first);
-    NumExprAst n2 = (NumExprAst)(Args->rest->first);
-    NumExprAst n3 = (NumExprAst)(Args->rest->rest->first);
-
-    ASSERT_TRUE(n1->tag == NumExprAst_T);
-    ASSERT_TRUE(n2->tag == NumExprAst_T);
-    ASSERT_TRUE(n3->tag == NumExprAst_T);
-    
-    ASSERT_DBL_NEAR(n1->val, 1.0);
-    ASSERT_DBL_NEAR(n2->val, 2.0);
-    ASSERT_DBL_NEAR(n3->val, 3.0);
-}
-
-CTEST(suite_fe, test_parse5) {
-    char *fn = path_join(test_data_path, "test_parse.5");
-    List_T tokens = tokenize(fn);
-    ExprAst e = parse(tokens);
-
+    /* Defun */
+    es = es->rest;
+    e = es->first;
     ASSERT_TRUE(e->tag == FunctionAst_T);
-
-    PrototypeAst prototype = ((FunctionAst)e)->proto;
-    
-    ASSERT_TRUE(prototype->tag == PrototypeAst_T);
-    ASSERT_STR(prototype->function_name, "f");
-
-    List_T paras = prototype->args;
-
-    ASSERT_EQUAL(List_length(paras), 2);
-
-    VarExprAst para1 = (VarExprAst)(paras->first);
-
-    ASSERT_TRUE(para1->tag == VarExprAst_T);
-    ASSERT_STR(para1->name, "x");
-    
-    VarExprAst para2 = (VarExprAst)(paras->rest->first);
-
-    ASSERT_TRUE(para2->tag == VarExprAst_T);
-    ASSERT_STR(para2->name, "y");
-    
+    PrototypeAst proto = ((FunctionAst)e)->proto;
     ExprAst body = ((FunctionAst)e)->body;
-    
-    ASSERT_TRUE(body->tag == BinExprAst_T);
-    ASSERT_STR(((BinExprAst)body)->op, "+");
+    ASSERT_TRUE(proto->tag == PrototypeAst_T);
+    ASSERT_STR(proto->function_name, "f");
+    List_T params = proto->args;
+    ASSERT_TRUE(List_length(params) == 2);
+    e = params->first;
+    CHECK_VAR(e, "x");
+    e = params->rest->first;
+    CHECK_VAR(e, "y");
+    ASSERT_TRUE(e->tag == BinExprAst_T);
 
-    ExprAst LHS = ((BinExprAst)body)->LHS;
-    
-    ASSERT_TRUE(LHS->tag == VarExprAst_T);
-    ASSERT_STR(((VarExprAst)LHS)->name, "x");
-
-    ExprAst RHS = ((BinExprAst)body)->RHS;
-    
-    ASSERT_TRUE(RHS->tag == CallExprAst_T);
-
-    char *callee = ((CallExprAst)RHS)->callee;
-
-    ASSERT_STR(callee, "f");
-
-    List_T args = ((CallExprAst)RHS)->args;
-    
-    ASSERT_EQUAL(List_length(args), 2);
-    
-    VarExprAst arg1 = (VarExprAst)(args->first);
-
-    ASSERT_TRUE(arg1->tag == VarExprAst_T);
-    ASSERT_STR(arg1->name, "y");
-    
-    VarExprAst arg2 = (VarExprAst)(args->rest->first);
-
-    ASSERT_TRUE(arg2->tag == VarExprAst_T);
-    ASSERT_STR(arg2->name, "x");
-}
-
-CTEST(suite_fe, test_parse6) {
-    char *fn = path_join(test_data_path, "test_parse.6");
-    List_T tokens = tokenize(fn);
-    ExprAst e = parse(tokens);
-
-    ASSERT_TRUE(e->tag == CmpExprAst_T);
-    ASSERT_STR(((CmpExprAst)e)->op, "<=");
-
-    ExprAst C1 = ((CmpExprAst)e)->C1;
-    ExprAst C2 = ((CmpExprAst)e)->C2;
-
-    ASSERT_TRUE(C1->tag == NumExprAst_T);
-    ASSERT_TRUE(C2->tag == NumExprAst_T);
-    ASSERT_DBL_NEAR(((NumExprAst)C1)->val, 1.0);
-    ASSERT_DBL_NEAR(((NumExprAst)C2)->val, 2.0);
-}
-
-CTEST(suite_fe, test_parse7) {
-    char *fn = path_join(test_data_path, "test_parse.7");
-    List_T tokens = tokenize(fn);
-    ExprAst e = parse(tokens);
-
-    ASSERT_TRUE(e->tag == IfExprAst_T);
-    
-    CmpExprAst cmp = ((IfExprAst)e)->cmp;
-    ASSERT_TRUE(cmp->tag == CmpExprAst_T);
-    ASSERT_STR(cmp->op, ">=");
-
-    NumExprAst C1 = (NumExprAst)(cmp->C1);
-    NumExprAst C2 = (NumExprAst)(cmp->C2);
-    ASSERT_TRUE(C1->tag == NumExprAst_T);
-    ASSERT_TRUE(C2->tag == NumExprAst_T);
-    ASSERT_DBL_NEAR(C1->val, 5.0);
-    ASSERT_DBL_NEAR(C2->val, 4.0);
-
-    VarExprAst then_body = (VarExprAst)(((IfExprAst)e)->then_body);
-    ASSERT_TRUE(then_body->tag == VarExprAst_T);
-    ASSERT_STR(then_body->name, "a");
-    
-    IfExprAst else_body = (IfExprAst)(((IfExprAst)e)->else_body);
-    cmp = else_body->cmp;
-    ASSERT_TRUE(cmp->tag == CmpExprAst_T);
-    ASSERT_STR(cmp->op, "<=");
-
-    C1 = (NumExprAst)(cmp->C1);
-    C2 = (NumExprAst)(cmp->C2);
-    ASSERT_TRUE(C1->tag == NumExprAst_T);
-    ASSERT_TRUE(C2->tag == NumExprAst_T);
-    ASSERT_DBL_NEAR(C1->val, 2.0);
-    ASSERT_DBL_NEAR(C2->val, 9.2);
-
-    then_body = (VarExprAst)(else_body->then_body);
-    ASSERT_TRUE(then_body->tag == VarExprAst_T);
-    ASSERT_STR(then_body->name, "c");
-
-    ASSERT_NULL(else_body->else_body);
-}
-
-CTEST(suite_fe, test_parse8) {
-    char *fn = path_join(test_data_path, "test_parse.8");
-    List_T tokens = tokenize(fn);
-    ExprAst e = parse(tokens);
-
-    ASSERT_TRUE(((PrototypeAst)e)->tag == PrototypeAst_T);
-    ASSERT_STR(((PrototypeAst)e)->function_name, "log");
-
-    List_T args = ((PrototypeAst)e)->args;
-    ASSERT_TRUE(List_length(args) == 2);
-    
-    VarExprAst arg1 = (VarExprAst)(args->first);
-    VarExprAst arg2 = (VarExprAst)(args->rest->first);
-    ASSERT_TRUE(arg1->tag == VarExprAst_T);
-    ASSERT_TRUE(arg2->tag == VarExprAst_T);
-    ASSERT_STR(arg1->name, "base");
-    ASSERT_STR(arg2->name, "x");
 }
 
 int main(int argc, char *argv[])

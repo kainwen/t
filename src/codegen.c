@@ -40,6 +40,7 @@ static Table_T NamedValues;
 
 static int INIT_CALLED = 0;
 
+static LLVMValueRef codegen_single_expr(ExprAst expr_ast);
 static int cmp_var(const void *x, const void *y);
 static unsigned int hash_var(const void *key);
 static void set_call_args(void **x, void *cl);
@@ -78,8 +79,20 @@ DumpResult(void)
     LLVMDumpModule(Module);
 }
 
-LLVMValueRef
-codegen(ExprAst expr_ast)
+void
+codegen(List_T expr_asts)
+{
+    ExprAst e;
+    while (expr_asts)
+    {
+        e = expr_asts->first;
+        codegen_single_expr(e);
+        expr_asts = expr_asts->rest;
+    }
+}
+
+static LLVMValueRef
+codegen_single_expr(ExprAst expr_ast)
 {
     LLVMValueRef value = NULL;
     
@@ -141,7 +154,7 @@ set_call_args(void **x, void *cl)
 {
     Closure *cls = (Closure*)cl;
     ExprAst expr_ast = *((ExprAst*)x);
-    LLVMValueRef value = codegen(expr_ast);
+    LLVMValueRef value = codegen_single_expr(expr_ast);
     LLVMValueRef *Args = (LLVMValueRef *)(cls->array);
     Args[cls->index++] = value;
 }
@@ -205,8 +218,8 @@ handle_bin(BinExprAst expr_ast)
     else
         RAISE(Unknown_Arith_Operator);
 
-    lhs = codegen(expr_ast->LHS);
-    rhs = codegen(expr_ast->RHS);
+    lhs = codegen_single_expr(expr_ast->LHS);
+    rhs = codegen_single_expr(expr_ast->RHS);
     if (!lhs || !rhs)
         return NULL;
 
@@ -299,7 +312,7 @@ handle_function(FunctionAst expr_ast)
     for (i = 0; i < arg_num; i++)
         Table_put(NamedValues, LLVMGetValueName(params[i]), params[i]);
 
-    LLVMValueRef body = codegen(expr_ast->body);
+    LLVMValueRef body = codegen_single_expr(expr_ast->body);
     if (body)
     {
         LLVMBuildRet(Builder, body);
@@ -310,4 +323,3 @@ handle_function(FunctionAst expr_ast)
     LLVMDeleteFunction(func);
     return NULL;
 }
-

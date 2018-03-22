@@ -178,8 +178,38 @@ CTEST(suite_fe, test_parse) {
     CHECK_VAR(e, "x");
     e = params->rest->first;
     CHECK_VAR(e, "y");
-    ASSERT_TRUE(e->tag == BinExprAst_T);
 
+    /* Cmp */
+    es = es->rest;
+    e = es->first;
+    ASSERT_TRUE(e->tag == CmpExprAst_T);
+    ASSERT_STR(((CmpExprAst)e)->op, "<=");
+    CHECK_NUM(((CmpExprAst)e)->C1, 1.0);
+    CHECK_NUM(((CmpExprAst)e)->C2, 2.0);
+
+    /* If */
+    es = es->rest;
+    e = es->first;
+    ASSERT_TRUE(e->tag == IfExprAst_T);
+    CmpExprAst cmp = ((IfExprAst)e)->cmp;
+    ExprAst then_body = ((IfExprAst)e)->then_body;
+    ExprAst else_body = ((IfExprAst)e)->else_body;
+    ASSERT_TRUE(cmp->tag == CmpExprAst_T);
+    CHECK_NUM(cmp->C1, 5.0);
+    CHECK_NUM(cmp->C2, 4.0);
+    CHECK_VAR(then_body, "a");
+    CHECK_VAR(else_body, "b");
+
+    /* Extern */
+    es = es->rest;
+    e = es->first;
+    ASSERT_TRUE(e->tag == PrototypeAst_T);
+    ASSERT_STR(((PrototypeAst)e)->function_name, "log");
+    params = ((PrototypeAst)e)->args;
+    ExprAst p1 = params->first;
+    ExprAst p2 = params->rest->first;
+    CHECK_VAR(p1, "base");
+    CHECK_VAR(p2, "x");
 }
 
 int main(int argc, char *argv[])

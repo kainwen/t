@@ -7,7 +7,7 @@
 #include "llvm-c/Analysis.h"
 
 extern void InitEnv(const char *module_name);
-extern LLVMValueRef codegen(ExprAst expr_ast);
+extern void codegen(List_T expr_asts);
 extern void DumpResult(void);
 
 #endif

@@ -4,11 +4,13 @@ project (t)
 
 ########## Set Shared Library Output Dir ###########
 set(LIBRARY_OUTPUT_PATH "${PROJECT_BINARY_DIR}/lib")
+set(RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/bin")
 
 ############### Set Include Dir ####################
 include_directories ("${PROJECT_SOURCE_DIR}/include")
 
-message("${CMAKE_ROOT}")
+message("${RUNTIME_OUTPUT_DIRECTORY}")
+
 ############### check dependencies #################
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${PROJECT_SOURCE_DIR}/cmakes")
 
@@ -29,4 +31,13 @@ add_subdirectory(tests)
 enable_testing()
 set(UNIT_TEST_DATA_PATH "${PROJECT_SOURCE_DIR}/tests/data")
 add_test(NAME test_fe COMMAND test_fe "${UNIT_TEST_DATA_PATH}")
-add_test(NAME test_codegen COMMAND test_codegen "${UNIT_TEST_DATA_PATH}")
+
+###############################################################################
+# Isolation tests
+set(ISOLATION_TEST_ROOT "${PROJECT_SOURCE_DIR}/tests/isolation")
+set(ISOLATION_TEST_DRIVER  "${ISOLATION_TEST_ROOT}/isolation.py")
+set(COMPILER_BIN_PATH "${CMAKE_INSTALL_PREFIX}/bin/compile")
+
+add_custom_target(isolation
+                  COMMAND python3 "${ISOLATION_TEST_DRIVER}" "-d" "${ISOLATION_TEST_ROOT}" "-c" "${COMPILER_BIN_PATH}"
+                  WORKING_DIRECTORY "${ISOLATION_TEST_ROOT}")

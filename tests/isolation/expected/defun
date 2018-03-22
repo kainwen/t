@@ -1,0 +1,8 @@
+; ModuleID = 'defun'
+source_filename = "defun"
+
+define double @f(double %x) {
+entry:
+  %addtmp = fadd double %x, 1.000000e+00
+  ret double %addtmp
+}

@@ -7,7 +7,5 @@ def f(x, y)
 [<= , 1, 2]
 if [>=, 5.0, 4.0]
 then a
-else
-   if [<= , 2.0, 9.2]
-   then c   
+else b
 extern log(base, x);
